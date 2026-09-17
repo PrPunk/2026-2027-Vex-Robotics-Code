@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
-/*    Author:       Josiah Schatz and Sherwin Sagadam                         */
+/*    Author:       Kobe Lebron and Netenyahu */
 /*    Created:      Sat 23 Aug 2025                                           */
 /*    Description:  Team 986B bot for 2025-2026                               */
 /*                                                                            */
@@ -123,7 +123,7 @@ void spinIntakePush(int msecs) {
 //       rightSide.spin(fwd, calcSpeed, pct);
 //       wait(calcSpeed/10, msec);
 //     }
-//     leftSide.stop(brake);
+//     leftSide.stop(brake); 67
 //     rightSide.stop(brake);
 //   } else if (distance < 0) {
 //     // Turn clockwise
@@ -431,6 +431,17 @@ void usercontrol(void) {
       outakeBottom.stop(coast);
     }
 
+    if (CT1.ButtonA.pressing()) {
+      arm1.spin(fwd, 100, pct);
+      arm2.spin(fwd, 100, pct);
+    } else if (CT1.ButtonB.pressing()) {
+      arm1.spin(fwd, -100, pct);
+      arm2.spin(fwd, -100, pct);
+    } else {
+      arm1.stop(brake);
+      arm2.stop(brake);
+    };
+
     if (CT1.ButtonDown.pressing()) {
       parkPistons.set(0);
     } else if (CT1.ButtonUp.pressing()) {
@@ -456,11 +467,7 @@ void usercontrol(void) {
       dSpeed = 1;
     }
 
-    if (CT1.ButtonY.pressing()) {
-      ballLockPiston.set(1);
-    } else if (CT1.ButtonA.pressing()) {
-      ballLockPiston.set(0);
-    }
+
 
     // if (CT1.ButtonY.pressing() && CT1.ButtonB.pressing()) {
     //   slowDrive = true;

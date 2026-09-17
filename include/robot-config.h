@@ -20,6 +20,8 @@ extern digital_out ballLockPiston;
 extern digital_out intakePistons;
 extern digital_out descoreArm;
 extern digital_out pnu2;
+extern motor arm1;
+extern motor arm2;
 
 extern motor_group leftSide;
 extern motor_group rightSide;
