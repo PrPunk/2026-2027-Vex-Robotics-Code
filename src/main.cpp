@@ -459,10 +459,10 @@ void usercontrol(void) {
       elbow2.stop(hold);
     };
 
-    if (CT1.ButtonY.pressing() && hand.position(deg) > -67) {
+    if (CT1.ButtonY.pressing() && hand.position(deg) > -225) {
       hand.spin(fwd, 100, pct);
     } else {
-      hand.stop(hold);
+      hand.stop(coast);
     }
 
     //if (CT1.ButtonDown.pressing()) {
