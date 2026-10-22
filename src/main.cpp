@@ -460,9 +460,9 @@ void usercontrol(void) {
     };
 
     if (CT1.ButtonY.pressing() && hand.position(deg) > -225) {
-      hand.spin(fwd, 100, pct);
+      hand.spin(fwd, -100, pct);
     } else {
-      hand.stop(coast);
+      hand.spin(fwd, 10, pct);
     }
 
     //if (CT1.ButtonDown.pressing()) {
