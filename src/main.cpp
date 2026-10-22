@@ -19,6 +19,7 @@ vex::timer accelTimer;
 
 const int accelStep = 10;
 const int accelSec = 300;
+const int armdeg = 200;
 
 float dSpeed = 1;
 // 48 teeth red
@@ -348,7 +349,12 @@ void autonomous(void) {
 
 void usercontrol(void) {
   // User control code here, inside the loop
+    arm1.resetPosition();
+    arm2.resetPosition();
   while (1) {
+
+    printf("%f,\n", hand.position(deg)); //, elbow2.position(deg)
+    // 
 
     if (!slowDrive) {
       // Tank drive controls
@@ -395,7 +401,7 @@ void usercontrol(void) {
     }
     
     
-    // Intake and outake controls
+    /* Intake and outake controls
     if (CT1.ButtonR2.pressing()) {
       // Starts sucking in for the intake
       intake.spin(fwd, 100, pct);
@@ -410,9 +416,9 @@ void usercontrol(void) {
     } else if (!intakeOn) {
       intake.stop(coast);
       outakeChainLift.stop(coast);
-    }
+    } */
 
-    if (CT1.ButtonL2.pressing()) {
+   /* if (CT1.ButtonL2.pressing()) {
       // Starts spitting out for outake
       // intakeR.spin(fwd, 100, pct);
       outakeTop.spin(fwd, 100, pct);
@@ -429,44 +435,60 @@ void usercontrol(void) {
       // intakeR.stop(coast);
       outakeTop.stop(coast);
       outakeBottom.stop(coast);
-    }
+    } */
 
-    if (CT1.ButtonA.pressing()) {
+    if (CT1.ButtonA.pressing() && arm1.position(deg) > -200 && arm2.position(deg) > -200) {  // arm up
       arm1.spin(fwd, 100, pct);
       arm2.spin(fwd, 100, pct);
-    } else if (CT1.ButtonB.pressing()) {
+    } else if (CT1.ButtonB.pressing() && arm1.position(deg) < -10 && arm2.position(deg) < -10) {   // arm own
       arm1.spin(fwd, -100, pct);
       arm2.spin(fwd, -100, pct);
     } else {
-      arm1.stop(brake);
-      arm2.stop(brake);
+      arm1.stop(hold);
+      arm2.stop(hold);
     };
 
-    if (CT1.ButtonDown.pressing()) {
-      parkPistons.set(0);
-    } else if (CT1.ButtonUp.pressing()) {
-      parkPistons.set(1);
+    if (CT1.ButtonR1.pressing() && elbow1.position(deg) > -67 && elbow2.position(deg) > -67) {
+      elbow1.spin(fwd, 100, pct);
+      elbow2.spin(fwd, 100, pct);
+    } else if (CT1.ButtonB.pressing() && elbow1.position(deg) < -10 && elbow2.position(deg) < -10) {   
+      elbow1.spin(fwd, -100, pct);
+      elbow2.spin(fwd, -100, pct);
+    } else {
+      elbow1.stop(hold);
+      elbow2.stop(hold);
+    };
+
+    if (CT1.ButtonY.pressing() && hand.position(deg) > -67) {
+      hand.spin(fwd, 100, pct);
+    } else {
+      hand.stop(hold);
     }
 
-    if (CT1.ButtonX.pressing()) {
+    //if (CT1.ButtonDown.pressing()) {
+    //  parkPistons.set(0);
+    //} else if (CT1.ButtonUp.pressing()) {
+    //  parkPistons.set(1);
+    //}
+
+    /* if (CT1.ButtonX.pressing()) {
       intakePistons.set(0);
     } else if (CT1.ButtonB.pressing()) {
       intakePistons.set(1);
-    }
+    } */
 
-    // Eliminates the judges if they give a bad score for our robot.
+    /* Eliminates the judges if they give a bad score for our robot.
     if (CT1.ButtonLeft.pressing()) {
       descoreArm.set(1);
     } else if (CT1.ButtonRight.pressing()) {
       descoreArm.set(0);
-    }
+    } */
 
-    if (CT1.ButtonL2.pressing()) {
+    /* if (CT1.ButtonL2.pressing()) {
       dSpeed = 0.3;
     } else {
       dSpeed = 1;
-    }
-
+    } */
 
 
     // if (CT1.ButtonY.pressing() && CT1.ButtonB.pressing()) {
