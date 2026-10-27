@@ -508,14 +508,16 @@ void usercontrol(void) {
     double armCompensation =
         currentArmPosition * elbowCompensationRatio;
 
+    // The two elbow motors are mounted as mirror images, so their encoder
+    // targets may need opposite signs to make the physical joint move together.
     double elbow1Target = elbowDownReference1 + baseElbowOffset - armCompensation;
-    double elbow2Target = elbowDownReference2 + baseElbowOffset - armCompensation;
+    double elbow2Target = elbowDownReference2 - baseElbowOffset + armCompensation;
 
     // Non-blocking movement allows the elbow to keep tracking the arm.
     elbow1.spinToPosition(elbow1Target, vex::rotationUnits::deg,
-                          50, vex::velocityUnits::pct, true);
+                          30, vex::velocityUnits::pct, true);
     elbow2.spinToPosition(elbow2Target, vex::rotationUnits::deg,
-                          50, vex::velocityUnits::pct, true);
+                          30, vex::velocityUnits::pct, true);
 
     previousArmPosition = currentArmPosition;
 
