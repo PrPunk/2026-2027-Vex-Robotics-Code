@@ -61,6 +61,26 @@ void stopIntake() {
   // outakeBottom.stop(brake);
 }
 
+struct SpinArgs {
+    vex::motor* m;
+    double position;
+    int speed;
+};
+
+void spinThenHoldTask(void* arg) {
+    SpinArgs* args = static_cast<SpinArgs*>(arg);
+
+    args->m->spinToPosition(args->position, vex::rotationUnits::deg, args->speed, vex::velocityUnits::pct, true);
+    args->m->stop(hold);
+
+    delete args;
+}
+
+void spinThenHold(vex::motor& m, double position, int speed) {
+    SpinArgs* args = new SpinArgs{&m, position, speed};
+    vex::thread(spinThenHoldTask, args);
+}
+
 void spinIntakeOutake(int msecs) {
   intake.spin(fwd, 100, pct);
   outakeTop.spin(fwd, 100, pct);
@@ -447,7 +467,7 @@ void usercontrol(void) {
       elbow1.stop(hold);
       elbow2.stop(hold);
     }
-    
+
 
     if (CT1.ButtonL1.pressing() && arm1.position(deg) > -360 && arm2.position(deg) > -360) {
       arm1.spin(fwd, 100, pct);
