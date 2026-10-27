@@ -34,6 +34,9 @@ bool outakeOn = false;
 float degPerInch = 25; // new robot 158.5127201; // old robot 47.012
 float inchPerDeg = 0.09; // new robot 0.0063086; // old robot 0.1069014
 
+bool elbowsMoving = false;
+float elbowAdjust = 0;
+
 int getSpeed(int percentComplete) {
   return 100 - ((percentComplete^8)*(10^14));
 }
@@ -368,9 +371,18 @@ void autonomous(void) {
 /*---------------------------------------------------------------------------*/
 
 void usercontrol(void) {
-  // User control code here, inside the loop
-    arm1.resetPosition();
-    arm2.resetPosition();
+  // Reset arm encoders once at the start of driver control.
+  arm1.resetPosition();
+  arm2.resetPosition();
+
+  // Elbow compensation: move 2/3 of the arm's rotation in the
+  // opposite direction so the elbow adjusts as the arm moves.
+  const double elbowCompensationRatio = 2.0 / 3.0;
+  double previousArmPosition =
+      (arm1.position(deg) + arm2.position(deg)) / 2.0;
+  double elbow1Target = elbow1.position(deg);
+  double elbow2Target = elbow2.position(deg);
+
   while (1) {
 
     printf("%f,%f\n", elbow1.position(deg), elbow2.position(deg));
@@ -457,28 +469,63 @@ void usercontrol(void) {
       outakeBottom.stop(coast);
     } */
 
-    if (CT1.ButtonA.pressing() && elbow1.position(deg) < 375 && elbow2.position(deg) < 375) {  // arm up
-      elbow1.spin(fwd, 50, pct);
-      elbow2.spin(fwd, 50, pct);
-    } else if (CT1.ButtonX.pressing() && elbow1.position(deg) > -10 && elbow2.position(deg) > -10) {   // <-10, <-10
-      elbow1.spin(fwd, -30, pct);
-      elbow2.spin(fwd, -30, pct);
-    } else {
-      elbow1.stop(hold);
-      elbow2.stop(hold);
-    }
+    bool armUp = CT1.ButtonL1.pressing() &&
+                 arm1.position(deg) > -360 && arm2.position(deg) > -360;
+    bool armDown = CT1.ButtonL2.pressing() &&
+                   arm1.position(deg) < -10 && arm2.position(deg) < -10;
+    bool manualElbowUp = CT1.ButtonA.pressing() &&
+                         elbow1.position(deg) < 375 &&
+                         elbow2.position(deg) < 375;
+    bool manualElbowDown = CT1.ButtonX.pressing() &&
+                           elbow1.position(deg) > -10 &&
+                           elbow2.position(deg) > -10;
 
+    // Keep the elbow target updated from the arm's actual encoder movement.
+    double currentArmPosition =
+        (arm1.position(deg) + arm2.position(deg)) / 2.0;
+    double armDelta = currentArmPosition - previousArmPosition;
 
-    if (CT1.ButtonL1.pressing() && arm1.position(deg) > -360 && arm2.position(deg) > -360) {
-      arm1.spin(fwd, 100, pct);
-      arm2.spin(fwd, 100, pct);
-    } else if (CT1.ButtonL2.pressing() && arm1.position(deg) < -10 && arm2.position(deg) < -10) {   
-      arm1.spin(fwd, -100, pct);
-      arm2.spin(fwd, -100, pct);
+    if (armUp || armDown) {
+      // Opposite sign = compensation. If your linkage needs the elbow to
+      // rotate in the same direction as the arm, change '-' to '+' here.
+      elbow1Target -= armDelta * elbowCompensationRatio;
+      elbow2Target -= armDelta * elbowCompensationRatio;
+
+      arm1.spin(fwd, armUp ? 100 : -100, pct);
+      arm2.spin(fwd, armUp ? 100 : -100, pct);
+
+      // Non-blocking position control lets the elbow track the arm while
+      // this loop continues to run.
+      elbow1.spinToPosition(elbow1Target, vex::rotationUnits::deg, 100, vex::velocityUnits::pct, true);
+      elbow2.spinToPosition(elbow2Target, vex::rotationUnits::deg, 100, vex::velocityUnits::pct, true);
+      elbowsMoving = true;
     } else {
       arm1.stop(coast);
       arm2.stop(coast);
-    };
+
+      // Manual elbow controls still work when the arm is not being moved.
+      if (manualElbowUp) {
+        elbow1.spin(fwd, 50, pct);
+        elbow2.spin(fwd, 50, pct);
+        elbow1Target = elbow1.position(deg);
+        elbow2Target = elbow2.position(deg);
+      } else if (manualElbowDown) {
+        elbow1.spin(fwd, -30, pct);
+        elbow2.spin(fwd, -30, pct);
+        elbow1Target = elbow1.position(deg);
+        elbow2Target = elbow2.position(deg);
+      } else {
+        elbow1.stop(hold);
+        elbow2.stop(hold);
+        // Re-sync targets after stopping so the next arm movement starts
+        // from the elbow's current position.
+        elbow1Target = elbow1.position(deg);
+        elbow2Target = elbow2.position(deg);
+      }
+    }
+
+    previousArmPosition = currentArmPosition;
+
 
     if (CT1.ButtonY.pressing() && hand.position(deg) > -225) {
       hand.spin(fwd, -100, pct);
