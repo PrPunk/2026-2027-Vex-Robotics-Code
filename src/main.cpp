@@ -247,7 +247,7 @@ void turnRobot(int degrees, int speed) {
 //     // rightSide.spinToPosition(-degreesToTurn, deg, speed, vex::velocityUnits::pct);
 //   };
 // }
-
+ 
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
