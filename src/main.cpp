@@ -353,7 +353,7 @@ void usercontrol(void) {
     arm2.resetPosition();
   while (1) {
 
-    printf("%f,\n", arm1.position(deg)); //, elbow2.position(deg)
+    printf("%f,%f\n", arm1.position(deg)) , arm2.position(deg);
     // 
 
     if (!slowDrive) {
@@ -437,15 +437,15 @@ void usercontrol(void) {
       outakeBottom.stop(coast);
     } */
 
-    if (CT1.ButtonA.pressing() && arm1.position(deg) > -200 && arm2.position(deg) > -200) {  // arm up
-      arm1.spin(fwd, 100, pct);
-      arm2.spin(fwd, 100, pct);
-    } else if (CT1.ButtonB.pressing() && arm1.position(deg) < -10 && arm2.position(deg) < -10) {   // arm own
-      arm1.spin(fwd, -100, pct);
-      arm2.spin(fwd, -100, pct);
+    if (CT1.ButtonA.pressing() && arm1.position(deg) > 500 && arm2.position(deg) > 500) {  // arm up
+      arm1.spin(fwd, 50, pct);
+      arm2.spin(fwd, 50, pct);
+    } else if (CT1.ButtonB.pressing() && arm1.position(deg) < -10 && arm2.position(deg) < -10) {   // <-10, <-10
+      arm1.spin(fwd, -50, pct);
+      arm2.spin(fwd, -50, pct);
     } else {
-      arm1.stop(hold);
-      arm2.stop(hold);
+      arm1.stop(coast);
+      arm2.stop(coast);
     };
 
     if (CT1.ButtonR1.pressing() && elbow1.position(deg) > -360 && elbow2.position(deg) > -360) {
