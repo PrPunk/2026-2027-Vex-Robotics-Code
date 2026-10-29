@@ -16,15 +16,17 @@ motor L3 = motor(PORT1, ratio6_1, false);
 motor R1 = motor(PORT15, ratio6_1, true);
 motor R2 = motor(PORT7, ratio6_1, true);
 motor R3 = motor(PORT12, ratio6_1, true);
-motor intake = motor(PORT19, ratio6_1, true);
+motor intake = motor(PORT6, ratio6_1, true);
 motor outakeTop = motor(PORT17, ratio18_1, true);
-motor outakeBottom = motor(PORT16, ratio18_1, false);
+motor outakeBottom = motor(PORT6, ratio18_1, false);
 motor outakeChainLift = motor(PORT12, ratio18_1, false);
 motor elbow1 = motor(PORT4, ratio6_1, false);
-motor elbow2 = motor(PORT14, ratio6_1, false);
-motor arm1 = motor(PORT6, ratio6_1, false);
-motor arm2 = motor(PORT9, ratio6_1, true);
+motor elbow2 = motor(PORT14, ratio6_1, true);
+motor arm1 = motor(PORT10, ratio6_1, false);
+motor arm2 = motor(PORT11, ratio6_1, true);
 motor hand = motor(PORT5, ratio6_1, true);
+
+// the wire that used to go here now goes here now 
 
 motor_group leftSide = motor_group(L1, L2, L3);
 motor_group rightSide = motor_group(R1, R2, R3);
