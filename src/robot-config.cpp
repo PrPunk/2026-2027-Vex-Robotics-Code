@@ -21,9 +21,9 @@ motor outakeTop = motor(PORT17, ratio18_1, true);
 motor outakeBottom = motor(PORT13, ratio18_1, false);
 motor outakeChainLift = motor(PORT12, ratio18_1, false);
 motor elbow1 = motor(PORT4, ratio6_1, false);
-motor elbow2 = motor(PORT14, ratio6_1, true);
+motor elbow2 = motor(PORT14, ratio6_1, false);
 motor arm1 = motor(PORT6, ratio6_1, false);
-motor arm2 = motor(PORT9, ratio6_1, true);
+motor arm2 = motor(PORT10, ratio6_1, true);
 motor hand = motor(PORT5, ratio6_1, true);
 
 // the wire that used to go here now goes here now 

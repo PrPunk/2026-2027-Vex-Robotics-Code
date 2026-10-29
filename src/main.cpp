@@ -391,7 +391,7 @@ void usercontrol(void) {
 
   while (1) {
 
-    printf("%f,%f\n", arm1.position(deg), arm2.position(deg));
+    printf("%f,%f\n", elbow1.position(deg), elbow2.position(deg));
     // 
 
     if (!slowDrive) {
@@ -476,9 +476,9 @@ void usercontrol(void) {
     } */
 
     bool armUp = CT1.ButtonL1.pressing() &&
-                 arm1.position(deg) > -360 && arm2.position(deg) > -360;
+                 arm1.position(deg) < 260 && arm2.position(deg) < 260;
     bool armDown = CT1.ButtonL2.pressing() &&
-                   arm1.position(deg) < -10 && arm2.position(deg) < -10;
+                   arm1.position(deg) > 10 && arm2.position(deg) > 10;
 
     // Button A toggles once per press (holding it will not repeatedly toggle).
     bool buttonAPressed = CT1.ButtonA.pressing();
@@ -492,8 +492,8 @@ void usercontrol(void) {
       arm1.spin(fwd, 100, pct);
       arm2.spin(fwd, 100, pct);
     } else if (armDown) {
-      arm1.spin(fwd, -100, pct);
-      arm2.spin(fwd, -100, pct);
+      arm1.spin(fwd, -30, pct);
+      arm2.spin(fwd, -30, pct);
     } else {
       arm1.stop(hold);
       arm2.stop(hold);
