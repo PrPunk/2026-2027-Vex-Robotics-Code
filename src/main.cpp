@@ -391,7 +391,7 @@ void usercontrol(void) {
 
   while (1) {
 
-    printf("%f,%f\n", elbow1.position(deg), elbow2.position(deg));
+    printf("%f,%f\n", arm1.position(deg), arm2.position(deg));
     // 
 
     if (!slowDrive) {
