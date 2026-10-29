@@ -516,9 +516,10 @@ void usercontrol(void) {
 
     // Non-blocking movement allows the elbow to keep tracking the arm.
     elbow1.spinToPosition(elbow1Target, vex::rotationUnits::deg,
-                          30, vex::velocityUnits::pct, true);
+                      30, vex::velocityUnits::pct, false);
+
     elbow2.spinToPosition(elbow2Target, vex::rotationUnits::deg,
-                          30, vex::velocityUnits::pct, true);
+                          30, vex::velocityUnits::pct, false);
 
     previousArmPosition = currentArmPosition;
 
