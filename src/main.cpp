@@ -20,6 +20,7 @@ vex::timer accelTimer;
 const int accelStep = 10;
 const int accelSec = 300;
 const int armdeg = 200;
+const double WRISTDEG = 360*2;   // change this to how far the wrist should rotate (degrees)
 
 float dSpeed = 1;
 // 48 teeth red
@@ -389,6 +390,12 @@ void usercontrol(void) {
   double previousArmPosition =
       (arm1.position(deg) + arm2.position(deg)) / 2.0;
 
+  // Wrist toggle setup:
+  // The wrist's position at the start of driver control is the "home" position.
+  const double wristHome = wrist.position(deg);
+  bool wristOut = false;
+  bool previousButtonUp = false;
+
   while (1) {
 
     printf("%f,%f\n", elbow1.position(deg), elbow2.position(deg));
@@ -494,6 +501,17 @@ void usercontrol(void) {
     } else {
       hand.stop(coast);
     }
+
+    // Button Y toggles the wrist once per press (holding won't re-toggle).
+    bool buttonUpPressed = CT1.ButtonUp.pressing();
+    if (buttonUpPressed && !previousButtonUp) {
+      wristOut = !wristOut;
+      double wristTarget = wristHome + (wristOut ? WRISTDEG : 0);
+      // Non-blocking so drive/arm/elbow keep running while the wrist moves.
+      wrist.spinToPosition(wristTarget, vex::rotationUnits::deg,
+                           50, vex::velocityUnits::pct, false);
+    }
+    previousButtonUp = buttonUpPressed;
 
     //if (CT1.ButtonDown.pressing()) {
     //  parkPistons.set(0);
