@@ -23,6 +23,7 @@ motor elbow2 = motor(PORT14, ratio6_1, false);
 motor arm1 = motor(PORT6, ratio6_1, false);
 motor arm2 = motor(PORT10, ratio6_1, true);
 motor hand = motor(PORT5, ratio6_1, true);
+motor wrist = motor(PORT8, ratio6_1, true);
 
 // the wire that used to go here now goes here now 
 

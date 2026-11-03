@@ -23,6 +23,7 @@ extern motor arm2;
 extern motor elbow1;
 extern motor elbow2;
 extern motor hand;
+extern motor wrist;
 
 extern motor_group leftSide;
 extern motor_group rightSide;
