@@ -10,12 +10,10 @@ brain  Brain;
 // VEXcode device constructors
 controller CT1 = controller(primary);
 
-motor L1 = motor(PORT3, ratio6_1, false);
-motor L2 = motor(PORT2, ratio6_1, false);
-motor L3 = motor(PORT1, ratio6_1, false);
-motor R1 = motor(PORT15, ratio6_1, true);
-motor R2 = motor(PORT7, ratio6_1, true);
-motor R3 = motor(PORT12, ratio6_1, true);
+motor L1 = motor(PORT19, ratio6_1, false);
+motor L2 = motor(PORT7, ratio6_1, false);
+motor R1 = motor(PORT1, ratio6_1, true);
+motor R2 = motor(PORT9, ratio6_1, true);
 motor intake = motor(PORT11, ratio6_1, true);
 motor outakeTop = motor(PORT17, ratio18_1, true);
 motor outakeBottom = motor(PORT13, ratio18_1, false);
@@ -28,9 +26,9 @@ motor hand = motor(PORT5, ratio6_1, true);
 
 // the wire that used to go here now goes here now 
 
-motor_group leftSide = motor_group(L1, L2, L3);
-motor_group rightSide = motor_group(R1, R2, R3);
-motor_group driveTrain = motor_group(L1, L2, L3, R1, R2, R3);
+motor_group leftSide = motor_group(L1, L2);
+motor_group rightSide = motor_group(R1, R2);
+motor_group driveTrain = motor_group(L1, L2, R1, R2);
 
 digital_out parkPistons(Brain.ThreeWirePort.G);
 digital_out ballLockPiston(Brain.ThreeWirePort.A);

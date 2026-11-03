@@ -394,49 +394,14 @@ void usercontrol(void) {
     printf("%f,%f\n", elbow1.position(deg), elbow2.position(deg));
     // 
 
-    if (!slowDrive) {
+    
       // Tank drive controls
-      L1.spin(fwd, (CT1.Axis2.value()*dSpeed/1.270), pct);
-      L2.spin(fwd, (CT1.Axis2.value()*dSpeed/1.270), pct);
-      L3.spin(fwd, (CT1.Axis2.value()*dSpeed/1.270), pct);
-      R1.spin(fwd, (CT1.Axis3.value()*dSpeed/1.270), pct);
-      R2.spin(fwd, (CT1.Axis3.value()*dSpeed/1.270), pct);
-      R3.spin(fwd, (CT1.Axis3.value()*dSpeed/1.270), pct);
-    } else {
-      //printf("%d, %d\n", CT1.Axis2.value(), CT1.Axis3.value()); 127 to -127
-      
-      if (accelTimer.time(vex::timeUnits::msec) >= accelStep) {
-        accelTimer.reset();
-
-        int leftTarget  = CT1.Axis2.value() * 100 / 127;
-        int rightTarget = CT1.Axis3.value() * 100 / 127;
-
-        // Time step in seconds
-        float dt = accelStep / 1000.0f;
-        
-        // Get acceleration based on current speed
-        float leftAccelMax  = accelSpeed(leftVeloc)  * dt;
-        float rightAccelMax = accelSpeed(rightVeloc) * dt;
-        // Ramp LEFT
-        int leftError = leftTarget - leftVeloc;
-        if (abs(leftError) > leftAccelMax) {
-          leftVeloc += sign(leftError) * leftAccelMax;
-        } else {
-          leftVeloc = leftTarget;
-        }
-
-        // Ramp RIGHT
-        int rightError = rightTarget - rightVeloc;
-        if (abs(rightError) > rightAccelMax) {
-          rightVeloc += sign(rightError) * rightAccelMax;
-        } else {
-          rightVeloc = rightTarget;
-        }
-
-        leftSide.spin(fwd, int(leftVeloc), pct);
-        rightSide.spin(fwd, int(rightVeloc), pct);
-      }
-    }
+    L1.spin(fwd, (CT1.Axis2.value()*dSpeed/1.270), pct);
+    L2.spin(fwd, (CT1.Axis2.value()*dSpeed/1.270), pct);
+    R1.spin(fwd, (CT1.Axis3.value()*dSpeed/1.270), pct);
+    R2.spin(fwd, (CT1.Axis3.value()*dSpeed/1.270), pct); 
+    
+    
     
     
     /* Intake and outake controls
