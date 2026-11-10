@@ -9,6 +9,8 @@
 
 #include "vex.h"
 #include "brain-display.cpp"
+#include <algorithm>
+#include <cmath>
 using namespace vex;
 BrainDisplay brainDisplay; 
 
@@ -131,38 +133,6 @@ void spinIntakePush(int msecs) {
   driveTrain.stop(brake);
 }
 
-// void moveStraight(float distance, int speed) {
-//   int degreesToTurn = degPerInch * distance;
-//   // driveTrain.resetPosition();
-//   // wait(100, vex::timeUnits::msec);
-//   // driveTrain.spinToPosition(degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//   // driveTrain.stop(brake);
-//   leftSide.resetPosition();
-//   rightSide.resetPosition();
-//   wait(100, vex::timeUnits::msec);
-//   if (distance > 0) {
-//     // Move Forward
-//     while (leftSide.position(deg) <= degreesToTurn && rightSide.position(deg) <= degreesToTurn) {
-//       int calcSpeed = int(float(getSpeed(int(abs(leftSide.position(deg)*100/degreesToTurn)))*speed)/100);
-//       leftSide.spin(fwd, calcSpeed, pct);
-//       rightSide.spin(fwd, calcSpeed, pct);
-//       wait(calcSpeed/10, msec);
-//     }
-//     leftSide.stop(brake); 67
-//     rightSide.stop(brake);
-//   } else if (distance < 0) {
-//     // Turn clockwise
-//     while (leftSide.position(deg) >= degreesToTurn && rightSide.position(deg) >= degreesToTurn) {
-//       int calcSpeed = int(float(getSpeed(int(abs(leftSide.position(deg)*100/degreesToTurn)))*speed)/100);
-//       leftSide.spin(fwd, -calcSpeed, pct);
-//       rightSide.spin(fwd, -calcSpeed, pct);
-//       wait(calcSpeed/10, msec);
-//     }
-//     leftSide.stop(brake);
-//     rightSide.stop(brake);
-//   }
-// }
-
 void moveStraight(float distance, int speed) {
   if (distance == 0) return;
 
@@ -222,35 +192,6 @@ void turnRobot(int degrees, int speed) {
   leftSide.stop(brake);
   rightSide.stop(brake);
 }
-// void turnRobot(int degrees, int speed) {
-//   float inchesToTurn = inchPerDeg * degrees;
-//   int degreesToTurn = degPerInch * inchesToTurn;
-//   degreesToTurn = abs(degreesToTurn);
-//   leftSide.resetPosition();
-//   rightSide.resetPosition();
-//   wait(100, vex::timeUnits::msec);
-//   if (degrees > 0) {
-//     // Turn counterclockwise
-//     while (leftSide.position(deg) <= degreesToTurn && rightSide.position(deg) >= -degreesToTurn) {
-//       leftSide.spin(fwd, speed, pct);
-//       rightSide.spin(fwd, -speed, pct);
-//     }
-//     leftSide.stop(brake);
-//     rightSide.stop(brake);
-//     // leftSide.spinToPosition(degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//     // rightSide.spinToPosition(-degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//   } else if (degrees < 0) {
-//     // Turn clockwise
-//     while (leftSide.position(deg) >= -degreesToTurn && rightSide.position(deg) <= degreesToTurn) {
-//       leftSide.spin(fwd, -speed, pct);
-//       rightSide.spin(fwd, speed, pct);
-//     }
-//     leftSide.stop(brake);
-//     rightSide.stop(brake);
-//     // leftSide.spinToPosition(degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//     // rightSide.spinToPosition(-degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//   };
-// }
  
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
@@ -379,16 +320,23 @@ void usercontrol(void) {
   // Elbow toggle setup:
   // Start driver control with the elbow physically pointing straight down.
   // Its current encoder positions become the 0-degree reference.
+  // (The elbow encoders are NOT reset, so no precision is lost.)
   const double elbowCompensationRatio = 2.0 / 3.0;
   const double elbowDownReference1 = elbow1.position(deg);
   const double elbowDownReference2 = elbow2.position(deg);
 
+  // Elbow controller tuning (proportional control with a deadband):
+  const double elbowKp = 0.4;         // raise if too slow, lower if it oscillates
+  const double elbowDeadband = 4.0;   // degrees of error to ignore (raise if it buzzes at rest)
+  const double elbowMaxSpeed = 40;    // max speed in pct
+
+  // Make the elbows hold their position when stopped so gravity can't drift them.
+  elbow1.setStopping(hold);
+  elbow2.setStopping(hold);
+
   // Button A toggles between down (0 degrees) and out (360 degrees).
   bool elbowOut = false;
   bool previousButtonA = false;
-
-  double previousArmPosition =
-      (arm1.position(deg) + arm2.position(deg)) / 2.0;
 
   // Wrist toggle setup:
   // The wrist's position at the start of driver control is the "home" position.
@@ -396,20 +344,21 @@ void usercontrol(void) {
   bool wristOut = false;
   bool previousButtonUp = false;
 
+  int loopCount = 0;
+
   while (1) {
 
-    printf("%f,%f\n", elbow1.position(deg), elbow2.position(deg));
-    // 
+    // Debug print, throttled to about twice per second so it doesn't slow the loop.
+    if (loopCount % 25 == 0) {
+      printf("%f,%f\n", elbow1.position(deg), elbow2.position(deg));
+    }
+    loopCount++;
 
-    
-      // Tank drive controls
+    // Tank drive controls
     L1.spin(fwd, (CT1.Axis2.value()*dSpeed/1.270), pct);
     L2.spin(fwd, (CT1.Axis2.value()*dSpeed/1.270), pct);
     R1.spin(fwd, (CT1.Axis3.value()*dSpeed/1.270), pct);
     R2.spin(fwd, (CT1.Axis3.value()*dSpeed/1.270), pct); 
-    
-    
-    
     
     /* Intake and outake controls
     if (CT1.ButtonR2.pressing()) {
@@ -486,15 +435,24 @@ void usercontrol(void) {
     double elbow2Target =
         elbowDownReference2 - baseElbowOffset + armCompensation;
 
-    // Non-blocking movement allows the elbow to keep tracking the arm.
-    elbow1.spinToPosition(elbow1Target, vex::rotationUnits::deg,
-                      30, vex::velocityUnits::pct, false);
+    // Proportional control with a deadband. This never restarts a motor move,
+    // and it holds still once the elbow is close enough to the target.
+    double err1 = elbow1Target - elbow1.position(deg);
+    double err2 = elbow2Target - elbow2.position(deg);
 
-    elbow2.spinToPosition(elbow2Target, vex::rotationUnits::deg,
-                          30, vex::velocityUnits::pct, false);
+    if (fabs(err1) < elbowDeadband) {
+      elbow1.stop(hold);
+    } else {
+      double s = std::max(-elbowMaxSpeed, std::min(elbowMaxSpeed, err1 * elbowKp));
+      elbow1.spin(fwd, s, pct);
+    }
 
-    previousArmPosition = currentArmPosition;
-
+    if (fabs(err2) < elbowDeadband) {
+      elbow2.stop(hold);
+    } else {
+      double s = std::max(-elbowMaxSpeed, std::min(elbowMaxSpeed, err2 * elbowKp));
+      elbow2.spin(fwd, s, pct);
+    }
 
     if (CT1.ButtonY.pressing() && hand.position(deg) > -225) {
       hand.spin(fwd, -100, pct);
@@ -502,7 +460,7 @@ void usercontrol(void) {
       hand.stop(coast);
     }
 
-    // Button Y toggles the wrist once per press (holding won't re-toggle).
+    // Button Up toggles the wrist once per press (holding won't re-toggle).
     bool buttonUpPressed = CT1.ButtonUp.pressing();
     if (buttonUpPressed && !previousButtonUp) {
       wristOut = !wristOut;
