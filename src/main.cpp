@@ -87,44 +87,6 @@ void spinThenHold(vex::motor& m, double position, int speed) {
     vex::thread(spinThenHoldTask, args);
 }
 
-/*
-void spinIntakeOutake(int msecs) {
-  intake.spin(fwd, 100, pct);
-  outakeTop.spin(fwd, 100, pct);
-  outakeBottom.spin(fwd, 100, pct);
-  outakeChainLift.spin(fwd, 100, pct);
-  wait (msecs, vex::timeUnits::msec);
-  intake.stop(brake);
-  outakeTop.stop(brake);
-  outakeBottom.stop(brake);
-  outakeChainLift.stop(brake);
-}
-*/
-
-//christian /*
-//void reverseOutakeIntake(int msecs) {
-//  intake.spin(fwd, -100, pct);
-//  outakeTop.spin(fwd, -100, pct);
-//  outakeBottom.spin(fwd, -100, pct);
-//  outakeChainLift.spin(fwd, -100, pct);
-//  wait (msecs, vex::timeUnits::msec);
-//  intake.stop(brake);
-//  outakeTop.stop(brake);
-//  outakeBottom.stop(brake);
-//  outakeChainLift.stop(brake);
-//} 
-
-
- /*void reverseOutake(int msecs) {
-  outakeTop.spin(fwd, -100, pct);
-  outakeBottom.spin(fwd, -100, pct);
-  outakeChainLift.spin(fwd, -100, pct);
-  wait (msecs, vex::timeUnits::msec);
-  outakeTop.stop(brake);
-  outakeBottom.stop(brake);
-  outakeChainLift.stop(brake);
-} */
-
 void spinIntakePush(int msecs) {
   intake.spin(fwd, 100, pct);
   // intakeR.spin(fwd, 100, pct);
@@ -136,38 +98,6 @@ void spinIntakePush(int msecs) {
   // outakeBottom.stop(brake);
   driveTrain.stop(brake);
 }
-
-// void moveStraight(float distance, int speed) {
-//   int degreesToTurn = degPerInch * distance;
-//   // driveTrain.resetPosition();
-//   // wait(100, vex::timeUnits::msec);
-//   // driveTrain.spinToPosition(degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//   // driveTrain.stop(brake);
-//   leftSide.resetPosition();
-//   rightSide.resetPosition();
-//   wait(100, vex::timeUnits::msec);
-//   if (distance > 0) {
-//     // Move Forward
-//     while (leftSide.position(deg) <= degreesToTurn && rightSide.position(deg) <= degreesToTurn) {
-//       int calcSpeed = int(float(getSpeed(int(abs(leftSide.position(deg)*100/degreesToTurn)))*speed)/100);
-//       leftSide.spin(fwd, calcSpeed, pct);
-//       rightSide.spin(fwd, calcSpeed, pct);
-//       wait(calcSpeed/10, msec);
-//     }
-//     leftSide.stop(brake);
-//     rightSide.stop(brake);
-//   } else if (distance < 0) {
-//     // Turn clockwise
-//     while (leftSide.position(deg) >= degreesToTurn && rightSide.position(deg) >= degreesToTurn) {
-//       int calcSpeed = int(float(getSpeed(int(abs(leftSide.position(deg)*100/degreesToTurn)))*speed)/100);
-//       leftSide.spin(fwd, -calcSpeed, pct);
-//       rightSide.spin(fwd, -calcSpeed, pct);
-//       wait(calcSpeed/10, msec);
-//     }
-//     leftSide.stop(brake);
-//     rightSide.stop(brake);
-//   }
-// }
 
 void moveStraight(float distance, int speed) {
   if (distance == 0) return;
@@ -228,36 +158,7 @@ void turnRobot(int degrees, int speed) {
   leftSide.stop(brake);
   rightSide.stop(brake);
 }
-// void turnRobot(int degrees, int speed) {
-//   float inchesToTurn = inchPerDeg * degrees;
-//   int degreesToTurn = degPerInch * inchesToTurn;
-//   degreesToTurn = abs(degreesToTurn);
-//   leftSide.resetPosition();
-//   rightSide.resetPosition();
-//   wait(100, vex::timeUnits::msec);
-//   if (degrees > 0) {
-//     // Turn counterclockwise
-//     while (leftSide.position(deg) <= degreesToTurn && rightSide.position(deg) >= -degreesToTurn) {
-//       leftSide.spin(fwd, speed, pct);
-//       rightSide.spin(fwd, -speed, pct);
-//     }
-//     leftSide.stop(brake);
-//     rightSide.stop(brake);
-//     // leftSide.spinToPosition(degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//     // rightSide.spinToPosition(-degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//   } else if (degrees < 0) {
-//     // Turn clockwise
-//     while (leftSide.position(deg) >= -degreesToTurn && rightSide.position(deg) <= degreesToTurn) {
-//       leftSide.spin(fwd, -speed, pct);
-//       rightSide.spin(fwd, speed, pct);
-//     }
-//     leftSide.stop(brake);
-//     rightSide.stop(brake);
-//     // leftSide.spinToPosition(degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//     // rightSide.spinToPosition(-degreesToTurn, deg, speed, vex::velocityUnits::pct);
-//   };
-// }
- 
+
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -280,88 +181,14 @@ void autonomous(void) {
   // Insert autonomous user code here
   if (autonMode == 1) {
     // Left Side Auton
-    spinIntake();
-    moveStraight(30, 30);
-    stopIntake();
-    turnRobot(115, 50);
-    //intakePistons.set(1);
-    moveStraight(8, 15);
-    moveTime(1,20);
-    moveStraight(-1,20);
-    //moveStraight(27, 15);
-    spinIntake();
-    wait(1500,msec);
-    stopIntake();
-    moveStraight(-15, 15);
     
-    moveTime(1, -15);
-    moveStraight(1, 20);
-    //spinIntakeOutake(1500);
-    moveStraight(1, 20);
-  //.set(0);
-    moveStraight(-0.75, 20);
-   // reverseOutake(300);
-    //spinIntakeOutake(10000);
-
   } else if (autonMode == 2) {
-    // turnRobot(90,50); //38 speeed for 90 degrees
     // Right Side Auton
-    // spinIntake();
-    // moveStraight(8.5, 30);
-    // turnRobot(90, 30);
-    // moveStraight(26.5, 35);
-    // turnRobot(41, 25);
-    // stopIntake();
-    // moveStraight(12, 35);
-    // reverseOutakeIntake(2000);
-    // moveStraight(-43, 90);
-    // turnRobot(140, 30);
-    // intakePistons.set(1);
-    // moveStraight(5, 35);
-    // spinIntakePush(2500);
-    // moveStraight(-15,25);
-    // intakePistons.set(0);
-    // outakePistons.set(1); 
-    // moveTime(2, -15);
-    // spinIntakeOutake(1500);
-    // reverseOutake(300);
-    // spinIntakeOutake(10000);
-    spinIntake();
-    moveStraight(30, 30);
-    stopIntake();
-    turnRobot(-110, 50);
-   // intakePistons.set(1);
-    moveStraight(8, 15);
-    moveTime(1,20);
-    moveStraight(-1,20);
-    //moveStraight(27, 15);
-    spinIntake();
-    wait(1500,msec);
-    stopIntake();
-    moveStraight(-15, 15);
     
-    moveTime(1, -15);
-    moveStraight(1, 20);
-   // spinIntakeOutake(1500);
-    moveStraight(1, 20);
-   // intakePistons.set(0);
-    moveStraight(-1, 20);
-   // reverseOutake(300);
-  //  spinIntakeOutake(10000);
 
   } else if (autonMode == 3) {
     // Skills Auton
-    spinIntake();
-    moveStraight(32, 30);
-    stopIntake();
-    turnRobot(-85, 30);
-   // parkPistons.set(1);
-    moveStraight(-16, 15);
-  //  spinIntakeOutake(1500);
-    moveStraight(29, 15);
-    spinIntakePush(3000);
-    moveStraight(-29, 15);
-   // spinIntakeOutake(10000);
+    
   } else {
     moveStraight(20, 100);
   }
@@ -537,46 +364,6 @@ void usercontrol(void) {
                            50, vex::velocityUnits::pct, false);
     }
     previousButtonUp = buttonUpPressed;
-
-    //if (CT1.ButtonDown.pressing()) {
-    //  parkPistons.set(0);
-    //} else if (CT1.ButtonUp.pressing()) {
-    //  parkPistons.set(1);
-    //}
-
-    /* if (CT1.ButtonX.pressing()) {
-      intakePistons.set(0);
-    } else if (CT1.ButtonB.pressing()) {
-      intakePistons.set(1);
-    } */
-
-    /* Eliminates the judges if they give a bad score for our robot.
-    if (CT1.ButtonLeft.pressing()) {
-      descoreArm.set(1);
-    } else if (CT1.ButtonRight.pressing()) {
-      descoreArm.set(0);
-    } */
-
-    /* if (CT1.ButtonL2.pressing()) {
-      dSpeed = 0.3;
-    } else {
-      dSpeed = 1;
-    } */
-
-
-    // if (CT1.ButtonY.pressing() && CT1.ButtonB.pressing()) {
-    //   slowDrive = true;
-    // } else if (CT1.ButtonY.pressing() && CT1.ButtonX.pressing()) {
-    //   slowDrive = false;
-    // }
-    // This is the main execution loop for the user control program.
-    // Each time through the loop your program should update motor + servo
-    // values based on feedback from the joysticks.
-
-    // ........................................................................
-    // Insert user code here. This is where you use the joystick values to
-    // update your motors, etc.
-    // ........................................................................
 
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
