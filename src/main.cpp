@@ -22,7 +22,7 @@ vex::timer accelTimer;
 const int accelStep = 10;
 const int accelSec = 300;
 const int armdeg = 200;
-const double WRISTDEG = 180*5;   // change this to how far the wrist should rotate (degrees)
+const double WRISTDEG = 360*2;   // change this to how far the wrist should rotate (degrees)
 
 float dSpeed = 1;
 // 48 teeth red
@@ -54,7 +54,7 @@ float accelSpeed(int speed) {
 
 void spinIntake() {
   intake.spin(fwd, 100, pct);
-  //outakeChainLift.spin(fwd, 100, pct);
+  outakeChainLift.spin(fwd, 100, pct);
   // intakeR.spin(fwd, 100, pct);
   // outakeBottom.spin(fwd, 100, pct);
 
@@ -62,7 +62,7 @@ void spinIntake() {
 
 void stopIntake() {
   intake.stop(brake);
-  //outakeChainLift.stop(brake);
+  outakeChainLift.stop(brake);
   // intakeR.stop(brake);
   // outakeBottom.stop(brake);
 }
@@ -87,7 +87,6 @@ void spinThenHold(vex::motor& m, double position, int speed) {
     vex::thread(spinThenHoldTask, args);
 }
 
-/*
 void spinIntakeOutake(int msecs) {
   intake.spin(fwd, 100, pct);
   outakeTop.spin(fwd, 100, pct);
@@ -99,23 +98,20 @@ void spinIntakeOutake(int msecs) {
   outakeBottom.stop(brake);
   outakeChainLift.stop(brake);
 }
-*/
+//christian
+void reverseOutakeIntake(int msecs) {
+  intake.spin(fwd, -100, pct);
+  outakeTop.spin(fwd, -100, pct);
+  outakeBottom.spin(fwd, -100, pct);
+  outakeChainLift.spin(fwd, -100, pct);
+  wait (msecs, vex::timeUnits::msec);
+  intake.stop(brake);
+  outakeTop.stop(brake);
+  outakeBottom.stop(brake);
+  outakeChainLift.stop(brake);
+}
 
-//christian /*
-//void reverseOutakeIntake(int msecs) {
-//  intake.spin(fwd, -100, pct);
-//  outakeTop.spin(fwd, -100, pct);
-//  outakeBottom.spin(fwd, -100, pct);
-//  outakeChainLift.spin(fwd, -100, pct);
-//  wait (msecs, vex::timeUnits::msec);
-//  intake.stop(brake);
-//  outakeTop.stop(brake);
-//  outakeBottom.stop(brake);
-//  outakeChainLift.stop(brake);
-//} 
-
-
- /*void reverseOutake(int msecs) {
+void reverseOutake(int msecs) {
   outakeTop.spin(fwd, -100, pct);
   outakeBottom.spin(fwd, -100, pct);
   outakeChainLift.spin(fwd, -100, pct);
@@ -123,7 +119,7 @@ void spinIntakeOutake(int msecs) {
   outakeTop.stop(brake);
   outakeBottom.stop(brake);
   outakeChainLift.stop(brake);
-} */
+}
 
 void spinIntakePush(int msecs) {
   intake.spin(fwd, 100, pct);
@@ -223,7 +219,7 @@ void autonomous(void) {
     moveStraight(30, 30);
     stopIntake();
     turnRobot(115, 50);
-    //intakePistons.set(1);
+    intakePistons.set(1);
     moveStraight(8, 15);
     moveTime(1,20);
     moveStraight(-1,20);
@@ -235,12 +231,12 @@ void autonomous(void) {
     
     moveTime(1, -15);
     moveStraight(1, 20);
-    //spinIntakeOutake(1500);
+    spinIntakeOutake(1500);
     moveStraight(1, 20);
-  //.set(0);
+    intakePistons.set(0);
     moveStraight(-0.75, 20);
-   // reverseOutake(300);
-    //spinIntakeOutake(10000);
+    reverseOutake(300);
+    spinIntakeOutake(10000);
 
   } else if (autonMode == 2) {
     // turnRobot(90,50); //38 speeed for 90 degrees
@@ -269,7 +265,7 @@ void autonomous(void) {
     moveStraight(30, 30);
     stopIntake();
     turnRobot(-110, 50);
-   // intakePistons.set(1);
+    intakePistons.set(1);
     moveStraight(8, 15);
     moveTime(1,20);
     moveStraight(-1,20);
@@ -281,12 +277,12 @@ void autonomous(void) {
     
     moveTime(1, -15);
     moveStraight(1, 20);
-   // spinIntakeOutake(1500);
+    spinIntakeOutake(1500);
     moveStraight(1, 20);
-   // intakePistons.set(0);
+    intakePistons.set(0);
     moveStraight(-1, 20);
-   // reverseOutake(300);
-  //  spinIntakeOutake(10000);
+    reverseOutake(300);
+    spinIntakeOutake(10000);
 
   } else if (autonMode == 3) {
     // Skills Auton
@@ -294,13 +290,13 @@ void autonomous(void) {
     moveStraight(32, 30);
     stopIntake();
     turnRobot(-85, 30);
-   // parkPistons.set(1);
+    parkPistons.set(1);
     moveStraight(-16, 15);
-  //  spinIntakeOutake(1500);
+    spinIntakeOutake(1500);
     moveStraight(29, 15);
     spinIntakePush(3000);
     moveStraight(-29, 15);
-   // spinIntakeOutake(10000);
+    spinIntakeOutake(10000);
   } else {
     moveStraight(20, 100);
   }
@@ -352,20 +348,6 @@ void usercontrol(void) {
 
   while (1) {
 
-    printf("%f\n", hand.position(deg)) ;//, elbow2.position(deg));
-    // 
-
-    
-      // Tank drive controls
-    L1.spin(fwd, (CT1.Axis3.value()*dSpeed/1.270), pct);
-    L2.spin(fwd, (CT1.Axis3.value()*dSpeed/1.270), pct);
-    R1.spin(fwd, (CT1.Axis2.value()*dSpeed/1.270), pct);
-    R2.spin(fwd, (CT1.Axis2.value()*dSpeed/1.270), pct); 
-    
-    
-   
-
-    if (CT1.ButtonLeft.pressing()) {
     // Debug print, throttled to about twice per second so it doesn't slow the loop.
     if (loopCount % 25 == 0) {
       printf("%f,%f\n", elbow1.position(deg), elbow2.position(deg));
@@ -398,26 +380,26 @@ void usercontrol(void) {
    /* if (CT1.ButtonL2.pressing()) {
       // Starts spitting out for outake
       // intakeR.spin(fwd, 100, pct);
-      intake.spin(fwd, 100, pct);
-      intake2.spin(fwd, -100, pct);
-     // outakeOn = true;
-    } else if (CT1.ButtonRight.pressing()) {
+      outakeTop.spin(fwd, 100, pct);
+      outakeBottom.spin(fwd, 100, pct);
+      outakeOn = true;
+    } else if (CT1.ButtonL1.pressing()) {
       // Stops sucking in and starts spitting out for intake
       // Stops spitting out and start sucking in for outake
       // intakeR.spin(fwd, -100, pct);
-      intake.spin(fwd, -100, pct);
-      intake2.spin(fwd, 100, pct);
-      //outakeOn = false;
-    } else if (CT1.ButtonB.pressing()) {
-   
-      intake.stop(coast);
-      intake2.stop(coast);
-    } 
+      outakeTop.spin(fwd, -100, pct);
+      outakeBottom.spin(fwd, -100, pct);
+      outakeOn = false;
+    } else if (!outakeOn) {
+      // intakeR.stop(coast);
+      outakeTop.stop(coast);
+      outakeBottom.stop(coast);
+    } */
 
     bool armUp = CT1.ButtonL1.pressing() &&
                  arm1.position(deg) < 260 && arm2.position(deg) < 260;
     bool armDown = CT1.ButtonL2.pressing() &&
-                   arm1.position(deg) > -30 && arm2.position(deg) > -30;
+                   arm1.position(deg) > 10 && arm2.position(deg) > 10;
 
     // Button A toggles once per press (holding it will not repeatedly toggle).
     bool buttonAPressed = CT1.ButtonA.pressing();
@@ -443,7 +425,7 @@ void usercontrol(void) {
         (arm1.position(deg) + arm2.position(deg)) / 2.0;
 
     // Down = the saved starting elbow position; out = 360 degrees from down.
-    double baseElbowOffset = elbowOut ? 450.0 : 0.0;
+    double baseElbowOffset = elbowOut ? 360.0 : 0.0;
     double armCompensation =
         currentArmPosition * elbowCompensationRatio;
 
@@ -474,8 +456,6 @@ void usercontrol(void) {
 
     if (CT1.ButtonY.pressing() && hand.position(deg) > -225) {
       hand.spin(fwd, -100, pct);
-    } else if (CT1.ButtonDown.pressing() && hand.position(deg) < -10) {
-      hand.spin(fwd, 100, pct);
     } else {
       hand.stop(coast);
     }
