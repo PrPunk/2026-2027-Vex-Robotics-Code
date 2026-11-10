@@ -12,12 +12,10 @@ controller CT1 = controller(primary);
 
 motor L1 = motor(PORT19, ratio6_1, true);
 motor L2 = motor(PORT7, ratio6_1, true);
-motor R1 = motor(PORT1, ratio6_1, true);
-motor R2 = motor(PORT9, ratio6_1, true);
-motor intake = motor(PORT11, ratio6_1, true);
-motor outakeTop = motor(PORT17, ratio18_1, true);
-motor outakeBottom = motor(PORT13, ratio18_1, false);
-motor outakeChainLift = motor(PORT12, ratio18_1, false);
+motor R1 = motor(PORT1, ratio6_1, false);
+motor R2 = motor(PORT9, ratio6_1, false);
+motor intake = motor(PORT12, ratio6_1, true);
+motor intake2 = motor(PORT11, ratio18_1, true);
 motor elbow1 = motor(PORT4, ratio6_1, false);
 motor elbow2 = motor(PORT14, ratio6_1, false);
 motor arm1 = motor(PORT6, ratio6_1, false);
