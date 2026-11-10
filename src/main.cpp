@@ -390,10 +390,16 @@ void usercontrol(void) {
   const double elbowDownReference1 = elbow1.position(deg);
   const double elbowDownReference2 = elbow2.position(deg);
 
-  // Elbow controller tuning (proportional control with a deadband):
-  const double elbowKp = 0.4;         // raise if too slow, lower if it oscillates
-  const double elbowDeadband = 4.0;   // degrees of error to ignore (raise if it buzzes at rest)
-  const double elbowMaxSpeed = 40;    // max speed in pct
+  // Elbow controller tuning. The elbow speed is the sum of:
+  //   1) feedforward: the arm's measured speed * compensation ratio, so the elbow
+  //      starts moving the instant the arm does and keeps pace with it, and
+  //   2) feedback: error * Kp, which keeps driving the elbow until it actually
+  //      reaches its destination (this is what moves it after pressing A).
+  // All speeds are in degrees per second (dps), so they don't depend on cartridge.
+  const double elbowKp = 5.0;          // dps per degree of error; raise if it lags, lower if it oscillates
+  const double elbowDeadband = 4.0;    // degrees of error to ignore when everything is at rest
+  const double elbowMaxDps = 600;      // cap on elbow speed (dps)
+  const double armMovingThreshold = 5; // dps; arm speeds below this count as "not moving"
 
   // Make the elbows hold their position when stopped so gravity can't drift them.
   elbow1.setStopping(hold);
@@ -483,23 +489,34 @@ void usercontrol(void) {
     double elbow2Target =
         elbowDownReference2 - baseElbowOffset + armCompensation;
 
-    // Proportional control with a deadband. This never restarts a motor move,
-    // and it holds still once the elbow is close enough to the target.
+    // Feedforward: how fast the arm is actually moving right now.
+    double armVelocity = (arm1.velocity(dps) + arm2.velocity(dps)) / 2.0;
+    bool armMoving = fabs(armVelocity) > armMovingThreshold;
+    if (!armMoving) armVelocity = 0;
+
+    // The targets above are (base - armComp) for elbow1 and (base + armComp) for
+    // elbow2, so the elbows must move at -ratio and +ratio times the arm speed.
+    double ff1 = -armVelocity * elbowCompensationRatio;
+    double ff2 =  armVelocity * elbowCompensationRatio;
+
+    // Feedback: keeps pushing toward the target until it is reached.
     double err1 = elbow1Target - elbow1.position(deg);
     double err2 = elbow2Target - elbow2.position(deg);
 
-    if (fabs(err1) < elbowDeadband) {
+    // Hold still only when both the arm and the elbow are settled. While the arm
+    // is moving we always command the elbow, so it never stutters or waits.
+    if (!armMoving && fabs(err1) < elbowDeadband) {
       elbow1.stop(hold);
     } else {
-      double s = std::max(-elbowMaxSpeed, std::min(elbowMaxSpeed, err1 * elbowKp));
-      elbow1.spin(fwd, s, pct);
+      double s = std::max(-elbowMaxDps, std::min(elbowMaxDps, ff1 + err1 * elbowKp));
+      elbow1.spin(fwd, s, vex::velocityUnits::dps);
     }
 
-    if (fabs(err2) < elbowDeadband) {
+    if (!armMoving && fabs(err2) < elbowDeadband) {
       elbow2.stop(hold);
     } else {
-      double s = std::max(-elbowMaxSpeed, std::min(elbowMaxSpeed, err2 * elbowKp));
-      elbow2.spin(fwd, s, pct);
+      double s = std::max(-elbowMaxDps, std::min(elbowMaxDps, ff2 + err2 * elbowKp));
+      elbow2.spin(fwd, s, vex::velocityUnits::dps);
     }
 
     if (CT1.ButtonY.pressing() && hand.position(deg) > -225) {
