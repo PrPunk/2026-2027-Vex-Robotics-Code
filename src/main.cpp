@@ -89,35 +89,23 @@ void spinThenHold(vex::motor& m, double position, int speed) {
 
 void spinIntakeOutake(int msecs) {
   intake.spin(fwd, 100, pct);
-  outakeTop.spin(fwd, 100, pct);
-  outakeBottom.spin(fwd, 100, pct);
   outakeChainLift.spin(fwd, 100, pct);
   wait (msecs, vex::timeUnits::msec);
   intake.stop(brake);
-  outakeTop.stop(brake);
-  outakeBottom.stop(brake);
   outakeChainLift.stop(brake);
 }
 //christian
 void reverseOutakeIntake(int msecs) {
   intake.spin(fwd, -100, pct);
-  outakeTop.spin(fwd, -100, pct);
-  outakeBottom.spin(fwd, -100, pct);
   outakeChainLift.spin(fwd, -100, pct);
   wait (msecs, vex::timeUnits::msec);
   intake.stop(brake);
-  outakeTop.stop(brake);
-  outakeBottom.stop(brake);
   outakeChainLift.stop(brake);
 }
 
 void reverseOutake(int msecs) {
-  outakeTop.spin(fwd, -100, pct);
-  outakeBottom.spin(fwd, -100, pct);
   outakeChainLift.spin(fwd, -100, pct);
   wait (msecs, vex::timeUnits::msec);
-  outakeTop.stop(brake);
-  outakeBottom.stop(brake);
   outakeChainLift.stop(brake);
 }
 
