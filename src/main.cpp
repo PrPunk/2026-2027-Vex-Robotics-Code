@@ -124,17 +124,17 @@ void moveStraight(float distance, int speed) {
   rightSide.stop(brake);
 }
 void elbow_up (void){
-  elbow1(fwd,75,pct);
-  elbow2(fwd,75,pct);
+  elbow1.spin(fwd,75,pct);
+  elbow2.spin(fwd,75,pct);
 
 }
 void elbow_down (void){
-  elbow1(fwd,-75,pct);
-  elbow2(fwd,-75,pct);
+  elbow1.spin(fwd,-75,pct);
+  elbow2.spin(fwd,-75,pct);
 }
 void elbow_stop (void){
-  elbow1(coast);
-  elbow2(coast);
+  elbow1.stop(coast);
+  elbow2.stop(coast);
 
 
 
@@ -195,7 +195,11 @@ void autonomous(void) {
   // Insert autonomous user code here
   if (autonMode == 1) {
     // Left Side Auton
-    
+    printf("howdy");
+    elbow_up();
+    wait(1,sec);
+    elbow_stop();
+    printf("howdy");
   } else if (autonMode == 2) {
     // Right Side Auton
     
