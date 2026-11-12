@@ -123,8 +123,22 @@ void moveStraight(float distance, int speed) {
   leftSide.stop(brake);
   rightSide.stop(brake);
 }
+void elbow_up (void){
+  elbow1(fwd,75,pct);
+  elbow2(fwd,75,pct);
+
+}
+void elbow_down (void){
+  elbow1(fwd,-75,pct);
+  elbow2(fwd,-75,pct);
+}
+void elbow_stop (void){
+  elbow1(coast);
+  elbow2(coast);
 
 
+
+}
 void moveTime(float seconds, int speed) {
   driveTrain.spin(fwd, speed, pct);
   wait(seconds * 1000, vex::timeUnits::msec);
