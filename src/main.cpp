@@ -463,7 +463,7 @@ void autonomous(void) {
     clawOut();
     moveStraight(-25,50);
     wait(1,sec);
-    clawopen();
+    clawOpen();
     wait(1,sec);
     moveStraight(10,50);
     turnRobot(220,50);
