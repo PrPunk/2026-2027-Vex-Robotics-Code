@@ -198,7 +198,7 @@ void autonomous(void) {
     elbow_up();
     wait(.5,sec);
     elbow_stop();
-    move(8,50);
+    moveStraight(-20,50);
     printf("howdy");
   } else if (autonMode == 2) {
     // Right Side Auton
