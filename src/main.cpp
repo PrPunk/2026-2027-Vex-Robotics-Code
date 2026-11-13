@@ -270,8 +270,8 @@ bool   wristIsFlipped  = false;
 // Hand (claw jaws). Driver control: Y drives toward -225, Down drives toward -10.
 // I assumed -225 = closed and -10 = open. If it's backwards on your robot,
 // just swap these two numbers.
-const double HAND_CLOSED_DEG = -225;
-const double HAND_OPEN_DEG   = -10;
+const double HAND_CLOSED_DEG = -10;
+const double HAND_OPEN_DEG   = -225;
 const double HAND_TOLERANCE  = 6.0;
 
 // Call once at startup (pre_auton) with the elbow pointing in and the arm down.
