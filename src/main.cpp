@@ -464,7 +464,9 @@ void autonomous(void) {
     moveStraight(-25,50);
     wait(1,sec);
     clawClose();
-    turnRobot(180,50);
+    wait(1,sec);
+    moveStraight(25,50);
+    turnRobot(230,50);
     printf("howdy");
   } else if (autonMode == 2) {
     // Right Side Auton
