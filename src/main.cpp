@@ -34,7 +34,7 @@ double rightVeloc = 0;
 int autonMode = 1;
 bool intakeOn = false;
 bool outakeOn = false;
-float degPerInch = 25; // new robot 158.5127201; // old robot 47.012
+// float degPerInch = 25; // new robot 158.5127201; // old robot 47.012
 float inchPerDeg = 0.09; // new robot 0.0063086; // old robot 0.1069014
 
 bool elbowsMoving = false;
@@ -396,7 +396,8 @@ void autonomous(void) {
   if (autonMode == 1) {
     // Left Side Auton
     clawOut();
-    moveStraight(-100,50);
+    moveStraight(-20,50);
+    
     printf("howdy");
   } else if (autonMode == 2) {
     // Right Side Auton
