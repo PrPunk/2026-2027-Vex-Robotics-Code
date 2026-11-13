@@ -395,9 +395,7 @@ void autonomous(void) {
   // Insert autonomous user code here
   if (autonMode == 1) {
     // Left Side Auton
-    elbow_up();
-    wait(.5,sec);
-    elbow_stop();
+    clawOut();
     moveStraight(-20,50);
     printf("howdy");
   } else if (autonMode == 2) {
