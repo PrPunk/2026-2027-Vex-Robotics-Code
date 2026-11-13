@@ -398,7 +398,7 @@ void clawClose(int speed = 100, int timeoutMs = 1500) {
 // Open the claw and let the motor go limp (same as driver control).
 void clawOpen(int speed = 100, int timeoutMs = 1500) {
   moveHand(HAND_OPEN_DEG, speed, timeoutMs);
-  hand.stop(coast);
+  hand.stop(hold);
 }
 
 // ---------------------------------------------------------------------------
