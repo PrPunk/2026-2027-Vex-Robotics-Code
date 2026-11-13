@@ -463,10 +463,11 @@ void autonomous(void) {
     clawOut();
     moveStraight(-25,50);
     wait(1,sec);
-    clawClose();
+    clawopen();
     wait(1,sec);
-    moveStraight(25,50);
-    turnRobot(230,50);
+    moveStraight(10,50);
+    turnRobot(220,50);
+    moveStraight(-25,50);
     printf("howdy");
   } else if (autonMode == 2) {
     // Right Side Auton
