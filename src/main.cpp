@@ -263,6 +263,17 @@ double elbowRef1  = 0;      // elbow encoder positions when the elbow is "in"
 double elbowRef2  = 0;
 bool   elbowIsOut = false;  // current commanded elbow state
 
+// Wrist: home position captured at startup, flipped = home + WRISTDEG
+double wristHomeDeg    = 0;
+bool   wristIsFlipped  = false;
+
+// Hand (claw jaws). Driver control: Y drives toward -225, Down drives toward -10.
+// I assumed -225 = closed and -10 = open. If it's backwards on your robot,
+// just swap these two numbers.
+const double HAND_CLOSED_DEG = -225;
+const double HAND_OPEN_DEG   = -10;
+const double HAND_TOLERANCE  = 6.0;
+
 // Call once at startup (pre_auton) with the elbow pointing in and the arm down.
 void captureReferences() {
   arm1.resetPosition();
@@ -270,6 +281,8 @@ void captureReferences() {
   elbowRef1 = elbow1.position(deg);
   elbowRef2 = elbow2.position(deg);
   elbowIsOut = false;
+  wristHomeDeg = wrist.position(deg);
+  wristIsFlipped = false;
   elbow1.setStopping(hold);
   elbow2.setStopping(hold);
 }
@@ -362,12 +375,64 @@ void armMove(double angleDeg, int speed = 100) {
 }
 
 // ---------------------------------------------------------------------------
+//  Hand (claw jaws)
+// ---------------------------------------------------------------------------
+static void moveHand(double targetDeg, int speed, int timeoutMs) {
+  vex::timer t;
+  t.clear();
+  while (t.time(msec) < timeoutMs) {
+    double err = targetDeg - hand.position(deg);
+    if (fabs(err) <= HAND_TOLERANCE) break;
+    hand.spin(fwd, (err > 0 ? 1 : -1) * speed, pct);
+    wait(10, msec);
+  }
+}
+
+// Close the claw. Holds the motor afterward so it keeps gripping.
+// If it stalls on a game piece it gives up after the timeout and keeps squeezing.
+void clawClose(int speed = 100, int timeoutMs = 1500) {
+  moveHand(HAND_CLOSED_DEG, speed, timeoutMs);
+  hand.stop(hold);
+}
+
+// Open the claw and let the motor go limp (same as driver control).
+void clawOpen(int speed = 100, int timeoutMs = 1500) {
+  moveHand(HAND_OPEN_DEG, speed, timeoutMs);
+  hand.stop(coast);
+}
+
+// ---------------------------------------------------------------------------
+//  Wrist
+// ---------------------------------------------------------------------------
+// Go to the flipped (true) or home (false) position. Blocks until it arrives.
+void wristSet(bool flipped, int speed = 50) {
+  wristIsFlipped = flipped;
+  double target = wristHomeDeg + (flipped ? WRISTDEG : 0);
+  wrist.spinToPosition(target, vex::rotationUnits::deg, speed,
+                       vex::velocityUnits::pct, false);
+
+  vex::timer t;
+  t.clear();
+  while (t.time(msec) < 4000 && fabs(target - wrist.position(deg)) > 5.0) {
+    wait(10, msec);
+  }
+}
+
+// Toggle the wrist between home and flipped (same as the Up button).
+void wristFlip(int speed = 50) {
+  wristSet(!wristIsFlipped, speed);
+}
+
+// ---------------------------------------------------------------------------
 //  Example usage inside autonomous():
 //
 //    armMove(150, 100);     // raise arm to 150 deg, elbows follow
 //    clawOut();             // swing elbow out
 //    moveStraight(12, 60);  // 12 inches forward
 //    turnRobot(90, 50);     // 90 deg turn
+//    clawClose();           // grab
+//    wristFlip();           // flip the wrist
+//    clawOpen();            // release
 //    clawIn();
 //    armMove(0);
 // ---------------------------------------------------------------------------
