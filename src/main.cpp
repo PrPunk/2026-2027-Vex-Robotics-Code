@@ -462,7 +462,7 @@ void autonomous(void) {
     // Left Side Auton
     clawOut();
     moveStraight(-20,50);
-    clawoOpen();
+    clawOpen();
     printf("howdy");
   } else if (autonMode == 2) {
     // Right Side Auton
