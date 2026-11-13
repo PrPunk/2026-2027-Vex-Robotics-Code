@@ -124,8 +124,8 @@ void moveStraight(float distance, int speed) {
   rightSide.stop(brake);
 }
 void elbow_up (void){
-  elbow1.spin(fwd,-75,pct);
-  elbow2.spin(fwd,75,pct);
+  elbow1.spin(fwd,75,pct);
+  elbow2.spin(fwd,-75,pct);
 
 }
 void elbow_down (void){
