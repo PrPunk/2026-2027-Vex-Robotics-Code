@@ -99,30 +99,31 @@ void spinIntakePush(int msecs) {
   driveTrain.stop(brake);
 }
 
-void moveStraight(float distance, int speed) {
-  if (distance == 0) return;
+// void moveStraight(float distance, int speed) {
+//   if (distance == 0) return;
 
-  int direction = (distance > 0) ? 1 : -1;
-  int degreesToTurn = abs(degPerInch * distance);
+//   int direction = (distance > 0) ? 1 : -1;
+//   int degreesToTurn = abs(degPerInch * distance);
 
-  leftSide.resetPosition();
-  rightSide.resetPosition();
-  wait(50, msec);
+//   leftSide.resetPosition();
+//   rightSide.resetPosition();
+//   wait(50, msec);
 
-  while ((abs(leftSide.position(deg)) + abs(rightSide.position(deg))) / 2 < degreesToTurn) {
-    int percent = (abs(leftSide.position(deg)) * 100) / degreesToTurn;
-    int calcSpeed = speed * (100 - percent) / 100;
-    calcSpeed = std::max(10, calcSpeed);
+//   while ((abs(leftSide.position(deg)) + abs(rightSide.position(deg))) / 2 < degreesToTurn) {
+//     int percent = (abs(leftSide.position(deg)) * 100) / degreesToTurn;
+//     int calcSpeed = speed * (100 - percent) / 100;
+//     calcSpeed = std::max(10, calcSpeed);
 
-    leftSide.spin(fwd, direction * calcSpeed, pct);
-    rightSide.spin(fwd, direction * calcSpeed, pct);
+//     leftSide.spin(fwd, direction * calcSpeed, pct);
+//     rightSide.spin(fwd, direction * calcSpeed, pct);
 
-    wait(10, msec);
-  }
+//     wait(10, msec);
+//   }
 
-  leftSide.stop(brake);
-  rightSide.stop(brake);
-}
+//   leftSide.stop(brake);
+//   rightSide.stop(brake);
+// }
+
 void elbow_up (void){
   elbow1.spin(fwd,75,pct);
   elbow2.spin(fwd,-75,pct);
@@ -145,33 +146,232 @@ void moveTime(float seconds, int speed) {
   driveTrain.stop(brake);
 }
 
-void turnRobot(int degrees, int speed) {
-  if (degrees == 0) return;
+// ============================================================================
+//  PASTE THIS BLOCK in main.cpp, right after moveTime() and before pre_auton().
+//  (See the notes in chat for what to delete / change elsewhere.)
+// ============================================================================
 
-  int direction = (degrees > 0) ? 1 : -1;
+// ---------------------------------------------------------------------------
+//  Drivetrain geometry
+// ---------------------------------------------------------------------------
+const double PI_CONST          = 3.14159265358979;
+const double WHEEL_DIAMETER_IN = 3.25;
+const double WHEEL_CIRC_IN     = PI_CONST * WHEEL_DIAMETER_IN;   // 10.21 in
+const double TRACK_RADIUS_IN   = 10.25;      // robot center to wheels
+const double MOTOR_TEETH       = 36.0;       // gear on the motor
+const double WHEEL_TEETH       = 48.0;       // gear on the wheel
+// Motor encoder degrees per 1 wheel degree (36T drives 48T -> 48/36).
+// The encoder reads the motor output shaft (after the 18:1 green cartridge),
+// so the cartridge doesn't change this number as long as the motors are
+// configured as ratio18_1 (green) in the robot config.
+const double MOTOR_DEG_PER_WHEEL_DEG = WHEEL_TEETH / MOTOR_TEETH;  // 1.3333
 
-  float inchesToTurn = inchPerDeg * abs(degrees);
-  int degreesToTurn = degPerInch * inchesToTurn;
+// Motor degrees needed to travel one inch (= 47.01)
+const double degPerInch = 360.0 * MOTOR_DEG_PER_WHEEL_DEG / WHEEL_CIRC_IN;
+
+// Tuning knobs
+double turnScale = 1.0;   // raise if the robot under-turns, lower if it over-turns
+const double MIN_DRIVE_PCT  = 12;    // slowest speed during the final approach
+const double SYNC_KP        = 0.3;   // pct per degree of left/right mismatch
+
+// ---------------------------------------------------------------------------
+//  Core encoder-based mover used by both moveStraight and turnRobot.
+//  targetDeg is how far each side should go (always positive).
+//  leftDir/rightDir are +1 or -1.
+// ---------------------------------------------------------------------------
+static void driveEncoder(double targetDeg, int maxSpeed, int leftDir, int rightDir) {
+  if (targetDeg <= 0 || maxSpeed <= 0) return;
 
   leftSide.resetPosition();
   rightSide.resetPosition();
   wait(50, msec);
 
-  while ((abs(leftSide.position(deg)) + abs(rightSide.position(deg))) / 2 < degreesToTurn) {
-    int percent = (abs(leftSide.position(deg)) * 100) / degreesToTurn;
-    int calcSpeed = speed * (100 - percent) / 100;
-    calcSpeed = std::max(10, calcSpeed);
+  const double accelDeg = std::min(targetDeg * 0.25, 100.0);
+  const double decelDeg = std::min(targetDeg * 0.50, 200.0);
 
-    // Counterclockwise = positive degrees
-    leftSide.spin(fwd,  direction * calcSpeed, pct);
-    rightSide.spin(fwd, -direction * calcSpeed, pct);
+  // Safety timeout: 200 rpm motor = 1200 deg/s at 100%.
+  double expectedMs = targetDeg / (12.0 * maxSpeed) * 1000.0;
+  double timeoutMs  = expectedMs * 2.0 + 500;
 
+  vex::timer t;
+  t.clear();
+
+  while (t.time(msec) < timeoutMs) {
+    double l = fabs(leftSide.position(deg));
+    double r = fabs(rightSide.position(deg));
+    double traveled  = (l + r) / 2.0;
+    double remaining = targetDeg - traveled;
+    if (remaining <= 0) break;
+
+    double v = maxSpeed;
+    if (accelDeg > 0 && traveled < accelDeg)
+      v = MIN_DRIVE_PCT + (maxSpeed - MIN_DRIVE_PCT) * (traveled / accelDeg);
+    if (decelDeg > 0 && remaining < decelDeg)
+      v = std::min(v, MIN_DRIVE_PCT + (maxSpeed - MIN_DRIVE_PCT) * (remaining / decelDeg));
+    v = std::max(v, MIN_DRIVE_PCT);
+    v = std::min(v, (double)maxSpeed);
+
+    // Keep both sides covering the same distance so it drives straight / turns evenly.
+    double corr = std::max(-10.0, std::min(10.0, (l - r) * SYNC_KP));
+
+    leftSide.spin(fwd,  leftDir  * (v - corr), pct);
+    rightSide.spin(fwd, rightDir * (v + corr), pct);
     wait(10, msec);
   }
 
   leftSide.stop(brake);
   rightSide.stop(brake);
+  wait(100, msec);
 }
+
+// Drive straight. Positive = forward, negative = backward. Distance in inches.
+void moveStraight(float distance, int speed) {
+  if (distance == 0) return;
+  int dir = (distance > 0) ? 1 : -1;
+  driveEncoder(fabs(distance) * degPerInch, speed, dir, dir);
+}
+
+// Turn in place. Positive degrees = left side forward / right side backward
+// (same direction as the original code).
+void turnRobot(float degrees, int speed) {
+  if (degrees == 0) return;
+  int dir = (degrees > 0) ? 1 : -1;
+
+  // Each wheel travels an arc of radius * angle (radians).
+  double arcInches = TRACK_RADIUS_IN * fabs(degrees) * PI_CONST / 180.0 * turnScale;
+  driveEncoder(arcInches * degPerInch, speed, dir, -dir);
+}
+
+// ---------------------------------------------------------------------------
+//  Elbow / arm autonomous support
+// ---------------------------------------------------------------------------
+const double ELBOW_OUT_DEG       = 450.0;      // "out" position (in = 0)
+const double ELBOW_COMP_RATIO    = 2.0 / 3.0;
+const double ELBOW_KP            = 5.0;
+const double ELBOW_DEADBAND      = 4.0;
+const double ELBOW_MAX_DPS       = 600;
+const double ELBOW_ARM_MOVE_DPS  = 5;
+const double ELBOW_TOLERANCE     = 8.0;        // "close enough" for auton waits
+
+const double ARM_MIN_DEG         = -30;        // same limits as driver control
+const double ARM_MAX_DEG         = 260;
+const double ARM_TOLERANCE       = 3.0;
+const double ARM_DOWN_MAX_PCT    = 30;         // driver control lowers at 30%
+
+// Shared between autonomous and driver control
+double elbowRef1  = 0;      // elbow encoder positions when the elbow is "in"
+double elbowRef2  = 0;
+bool   elbowIsOut = false;  // current commanded elbow state
+
+// Call once at startup (pre_auton) with the elbow pointing in and the arm down.
+void captureReferences() {
+  arm1.resetPosition();
+  arm2.resetPosition();
+  elbowRef1 = elbow1.position(deg);
+  elbowRef2 = elbow2.position(deg);
+  elbowIsOut = false;
+  elbow1.setStopping(hold);
+  elbow2.setStopping(hold);
+}
+
+// One control step for the elbows (same math as driver control).
+// Returns the larger of the two elbow errors in degrees.
+static double elbowStep() {
+  double armPos = (arm1.position(deg) + arm2.position(deg)) / 2.0;
+  double base   = elbowIsOut ? ELBOW_OUT_DEG : 0.0;
+  double comp   = armPos * ELBOW_COMP_RATIO;
+
+  double target1 = elbowRef1 + base - comp;
+  double target2 = elbowRef2 - base + comp;
+
+  double armVel = (arm1.velocity(dps) + arm2.velocity(dps)) / 2.0;
+  bool armMoving = fabs(armVel) > ELBOW_ARM_MOVE_DPS;
+  if (!armMoving) armVel = 0;
+
+  double ff1 = -armVel * ELBOW_COMP_RATIO;
+  double ff2 =  armVel * ELBOW_COMP_RATIO;
+
+  double err1 = target1 - elbow1.position(deg);
+  double err2 = target2 - elbow2.position(deg);
+
+  if (!armMoving && fabs(err1) < ELBOW_DEADBAND) {
+    elbow1.stop(hold);
+  } else {
+    double s = std::max(-ELBOW_MAX_DPS, std::min(ELBOW_MAX_DPS, ff1 + err1 * ELBOW_KP));
+    elbow1.spin(fwd, s, vex::velocityUnits::dps);
+  }
+  if (!armMoving && fabs(err2) < ELBOW_DEADBAND) {
+    elbow2.stop(hold);
+  } else {
+    double s = std::max(-ELBOW_MAX_DPS, std::min(ELBOW_MAX_DPS, ff2 + err2 * ELBOW_KP));
+    elbow2.spin(fwd, s, vex::velocityUnits::dps);
+  }
+  return std::max(fabs(err1), fabs(err2));
+}
+
+// Run the elbow controller until it's settled (or the timeout hits).
+static void settleElbows(int timeoutMs) {
+  vex::timer t;
+  t.clear();
+  while (t.time(msec) < timeoutMs) {
+    if (elbowStep() < ELBOW_TOLERANCE) break;
+    wait(20, msec);
+  }
+  elbow1.stop(hold);
+  elbow2.stop(hold);
+}
+
+// Elbow to the OUT position (450 deg from in). Blocks until it gets there.
+void clawOut() {
+  elbowIsOut = true;
+  settleElbows(3000);
+}
+
+// Elbow to the IN position (0 deg). Blocks until it gets there.
+void clawIn() {
+  elbowIsOut = false;
+  settleElbows(3000);
+}
+
+// Move the arm to angleDeg (same units as the arm encoders in driver control:
+// 0 = start, max 260, min -30). The elbows are driven the whole time so they
+// compensate exactly like they do in driver control. Blocks until done.
+void armMove(double angleDeg, int speed = 100) {
+  angleDeg = std::max(ARM_MIN_DEG, std::min(ARM_MAX_DEG, angleDeg));
+
+  vex::timer t;
+  t.clear();
+  while (t.time(msec) < 4000) {
+    double pos = (arm1.position(deg) + arm2.position(deg)) / 2.0;
+    double err = angleDeg - pos;
+    if (fabs(err) <= ARM_TOLERANCE) break;
+
+    // Slow down as we approach the target.
+    double v = std::min(1.0, std::max(0.2, fabs(err) / 60.0)) * speed;
+    if (err < 0) v = -std::min(v, ARM_DOWN_MAX_PCT);
+
+    arm1.spin(fwd, v, pct);
+    arm2.spin(fwd, v, pct);
+    elbowStep();
+    wait(20, msec);
+  }
+  arm1.stop(hold);
+  arm2.stop(hold);
+
+  settleElbows(1500);   // let the elbows finish catching up
+}
+
+// ---------------------------------------------------------------------------
+//  Example usage inside autonomous():
+//
+//    armMove(150, 100);     // raise arm to 150 deg, elbows follow
+//    clawOut();             // swing elbow out
+//    moveStraight(12, 60);  // 12 inches forward
+//    turnRobot(90, 50);     // 90 deg turn
+//    clawIn();
+//    armMove(0);
+// ---------------------------------------------------------------------------
+
 
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
