@@ -133,8 +133,8 @@ void elbow_down (void){
   elbow2.spin(fwd,-75,pct);
 }
 void elbow_stop (void){
-  elbow1.stop(coast);
-  elbow2.stop(coast);
+  elbow1.stop(hold);
+  elbow2.stop(hold);
 
 
 
@@ -195,10 +195,10 @@ void autonomous(void) {
   // Insert autonomous user code here
   if (autonMode == 1) {
     // Left Side Auton
-    printf("howdy");
     elbow_up();
-    wait(1,sec);
+    wait(.5,sec);
     elbow_stop();
+    move(8,50);
     printf("howdy");
   } else if (autonMode == 2) {
     // Right Side Auton
