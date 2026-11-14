@@ -3,7 +3,7 @@
 /*    Module:       main.cpp                                                  */
 /*    Author:       Kobe Lebron and Netenyahu */
 /*    Created:      Sat 23 Aug 2025                                           */
-/*    Description:  Team 986B bot for 2025-2026                               */
+/*    Description:  Team 986A bot for 2025-2026                               */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
@@ -441,6 +441,8 @@ void wristFlip(int speed = 50) {
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+
+  armMove(-20, 100);
   
   // All activities that occur before the scompetition starts
   // Example: clearing encoders, setting servo positions, ...
