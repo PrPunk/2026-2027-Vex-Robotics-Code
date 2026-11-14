@@ -476,6 +476,18 @@ void autonomous(void) {
     printf("howdy");
   } else if (autonMode == 2) {
     // Right Side Auton
+    clawOut();
+    moveStraight(-25,50);
+    wait(1,sec);
+    clawOpen();
+    wait(1,sec);
+    moveStraight(10,50);
+    turnRobot(140,50);
+    moveStraight(-25,50);
+    moveStraight(25,50);
+    moveStraight(-25,50);
+    moveStraight(30,50);
+    printf("howdy");
     
 
   } else if (autonMode == 3) {
