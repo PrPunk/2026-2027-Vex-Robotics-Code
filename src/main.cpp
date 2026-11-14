@@ -441,7 +441,7 @@ void wristFlip(int speed = 50) {
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
-
+  printf("tung");
   armMove(-20, 100);
   
   // All activities that occur before the scompetition starts
@@ -773,13 +773,13 @@ int main() {
   // Set up callbacks for autonomous and driver control periods.
   Brain.Screen.pressed(screenCallback);
   drawOnScreen();
+ // Run the pre-autonomous function.
+  pre_auton();
 
   Competition.autonomous(autonomous);
   Competition.drivercontrol(usercontrol);
 
-  // Run the pre-autonomous function.
-  pre_auton();
-
+ 
   // Prevent main from exiting with an infinite loop.
   while (true) {
     wait(100, msec);
