@@ -441,6 +441,8 @@ void wristFlip(int speed = 50) {
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
+
+  armMove(-20, 100);
   
   // All activities that occur before the scompetition starts
   // Example: clearing encoders, setting servo positions, ...
