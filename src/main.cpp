@@ -3,7 +3,7 @@
 /*    Module:       main.cpp                                                  */
 /*    Author:       Kobe Lebron and Netenyahu */
 /*    Created:      Sat 23 Aug 2025                                           */
-/*    Description:  Team 986B bot for 2025-2026                               */
+/*    Description:  Team 986A bot for 2025-2026                               */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
 
